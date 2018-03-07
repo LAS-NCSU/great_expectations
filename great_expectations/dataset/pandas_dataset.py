@@ -151,10 +151,42 @@ class PandasDataSet(MetaPandasDataSet, pd.DataFrame):
     PandasDataset instantiates the great_expectations Expectations API as a subclass of a pandas.DataFrame.
 
     For the full API reference, please see :func:`DataSet <great_expectations.dataset.base.DataSet>`
+
+    PandaDataset specific notes:
+    1. PandasDataset adds a boolean flag discard_subset_failing_expectations which controls
+       whether or not to discard expectations that are failing when a new dataset is created as
+       a subset of another dataset.
+    2. Subsets and smaples of PandaDataSet have ALL the expectations of the original
+       data frame unless the user specifies the discard_subset_failing_expectations=True
+       property on the original data frame.
+    3. Concatenations, joins, and merges of PandaDataSets ONLY contain the
+       default_expectations (see :func: `add_default_expectations`)
     """
+
+    @property
+    def _constructor(self):
+        return PandasDataSet
+
+    # Note that we do not define _constructor_sliced and/or _constructor_expanddim
+    # See http://pandas.pydata.org/pandas-docs/stable/internals.html#subclassing-pandas-data-structures
+
+    def __finalize__(self, other, method=None, **kwargs):
+        if isinstance(other, PandasDataSet):
+            self.initialize_expectations(other.get_expectations_config(
+                    discard_failed_expectations=False,
+                    discard_result_format_kwargs=False,
+                    discard_include_configs_kwargs=False,
+                    discard_catch_exceptions_kwargs=False,
+            ))
+            self.discard_subset_failing_expectations = other.discard_subset_failing_expectations
+            if self.discard_subset_failing_expectations:
+                self.discard_failing_expectations()
+        super(PandasDataSet, self).__finalize__(other, method, **kwargs)
+        return self
 
     def __init__(self, *args, **kwargs):
         super(PandasDataSet, self).__init__(*args, **kwargs)
+        self.discard_subset_failing_expectations = kwargs.get('discard_subset_failing_expectations', False)
         self.add_default_expectations()
 
     def add_default_expectations(self):
@@ -174,7 +206,7 @@ class PandasDataSet(MetaPandasDataSet, pd.DataFrame):
     @DocInherit
     @DataSet.expectation(['column'])
     def expect_column_to_exist(
-            self, column, column_index=None, result_format=None, include_config=False, 
+            self, column, column_index=None, result_format=None, include_config=False,
             catch_exceptions=None, meta=None
     ):
 
