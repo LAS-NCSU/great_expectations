@@ -160,7 +160,18 @@ class PandasDataSet(MetaPandasDataSet, pd.DataFrame):
     PandasDataset instantiates the great_expectations Expectations API as a subclass of a pandas.DataFrame.
 
     For the full API reference, please see :func:`DataSet <great_expectations.dataset.base.DataSet>`
+
+    NB
+    1. Subsets of PandaDataSet have ALL the expectations of the original
+       data frame unless the user specifies the discard_failing_expectations=True
+       property on the original data frame.
+    2. Samples of PandaDataSet have ALL the non-failing expectations of the original
+       data frame.
+    3. Concatenations, joins, and merges of PandaDataSets ONLY contain the
+       default_expectations (see :func: `add_default_expectations`)
     """
+
+    discard_failed_expectations = False
 
     @property
     def _constructor(self):
@@ -171,7 +182,10 @@ class PandasDataSet(MetaPandasDataSet, pd.DataFrame):
     def __finalize__(self, other, method=None, **kwargs):
         if isinstance(other, PandasDataSet):
             self.initialize_expectations(other.get_expectations_config())
-        super(PandasDataSet, self).__finalize__(other, **kwargs)
+            self.discard_failed_expectations = other.discard_failed_expectations
+            if self.discard_failed_expectations:
+                self.discard_failing_expectations()
+        super(PandasDataSet, self).__finalize__(other, method, **kwargs)
         return self
 
     def __init__(self, *args, **kwargs):
