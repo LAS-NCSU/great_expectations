@@ -497,7 +497,7 @@ class DataSet(object):
     ):
         """Returns _expectation_config as a JSON object, and perform some cleaning along the way.
         Args:
-            discard_failed_expectations=True     : Only include expectations with success_on_last_run=True in the exported config.
+            discard_failing_expectations=True     : Only include expectations with success_on_last_run=True in the exported config.
             discard_output_format_kwargs=True    : In returned expectation objects, suppress the `output_format` parameter.
             discard_include_configs_kwargs=True  : In returned expectation objects, suppress the `include_configs` parameter.
             discard_catch_exceptions_kwargs=True : In returned expectation objects, suppress the `catch_exceptions` parameter.
@@ -557,7 +557,7 @@ WARNING: get_expectations_config discarded
     44 output_format kwargs
      0 include_config kwargs
      1 catch_exceptions kwargs
-If you wish to change this behavior, please set discard_failed_expectations, discard_output_format_kwargs, discard_include_configs_kwargs, and discard_catch_exceptions_kwargs appropirately.
+If you wish to change this behavior, please set discard_failing_expectations, discard_output_format_kwargs, discard_include_configs_kwargs, and discard_catch_exceptions_kwargs appropirately.
             """
             if any([discard_failed_expectations, discard_output_format_kwargs, discard_include_configs_kwargs, discard_catch_exceptions_kwargs]):
                 print ("WARNING: get_expectations_config discarded")
@@ -569,7 +569,7 @@ If you wish to change this behavior, please set discard_failed_expectations, dis
                     print ("\t%d include_configs kwargs" % discards["include_configs"])
                 if discard_catch_exceptions_kwargs:
                     print ("\t%d catch_exceptions kwargs" % discards["catch_exceptions"])
-                print ("If you wish to change this behavior, please set discard_failed_expectations, discard_output_format_kwargs, discard_include_configs_kwargs, and discard_catch_exceptions_kwargs appropirately.")
+                print ("If you wish to change this behavior, please set discard_failing_expectations, discard_output_format_kwargs, discard_include_configs_kwargs, and discard_catch_exceptions_kwargs appropirately.")
 
         config["expectations"] = expectations
         return config
