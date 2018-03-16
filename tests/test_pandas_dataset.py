@@ -1665,7 +1665,7 @@ class TestPandasDataset(unittest.TestCase):
 
         # Set property/attribute so that failing expectations are
         # automatically removed when subsetting.
-        df.discard_failed_expectations = True
+        df.discard_subset_failing_expectations = True
 
         # Now check subsetting. In additional to the failure on column "C",
         # the expectations on column "B" now fail since column "B" doesn't
