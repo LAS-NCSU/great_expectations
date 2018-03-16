@@ -451,6 +451,14 @@ class DataSet(object):
                 else:
                     return expectation
 
+    def discard_failing_expectations(self):
+        res = self.validate(only_return_failures=True).get('results')
+        if any(res):
+            for item in res:
+                self.remove_expectation(expectation_type=item['expectation_type'], expectation_kwargs=item['kwargs'])
+#            print("WARNING: Removed %s expectations that were 'False'" % len(res))
+            warnings.warn("Removed %s expectations that were 'False'" % len(res))
+
     def get_default_expectation_arguments(self):
         """Fetch default expectation arguments for this DataSet
 
@@ -859,7 +867,7 @@ If you wish to change this behavior, please set discard_failed_expectations, dis
     ##### Table shape expectations #####
 
     def expect_column_to_exist(
-            self, column, column_index=None, result_format=None, include_config=False, 
+            self, column, column_index=None, result_format=None, include_config=False,
             catch_exceptions=None, meta=None
         ):
         """Expect the specified column to exist.
