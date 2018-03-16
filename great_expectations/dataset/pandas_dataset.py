@@ -162,17 +162,23 @@ class PandasDataSet(MetaPandasDataSet, pd.DataFrame):
        default_expectations (see :func: `add_default_expectations`)
     """
 
-    discard_failed_expectations = False
-
     @property
     def _constructor(self):
         return PandasDataSet
 
-# Do we need to define _constructor_sliced and/or _constructor_expanddim? See http://pandas.pydata.org/pandas-docs/stable/internals.html#subclassing-pandas-data-structures
+    # Currently we do not define _constructor_sliced and/or _constructor_expanddim.
+    # See http://pandas.pydata.org/pandas-docs/stable/internals.html#subclassing-pandas-data-structures
 
     def __finalize__(self, other, method=None, **kwargs):
         if isinstance(other, PandasDataSet):
-            self.initialize_expectations(other.get_expectations_config())
+            # Note: we do not want to discard failed expectations, because we are going to optionally re-validate and
+            # discard or keep expectations in a moment below
+            self.initialize_expectations(other.get_expectations_config(
+                discard_failed_expectations=False,
+                discard_result_format_kwargs=False,
+                discard_include_configs_kwargs=False,
+                discard_catch_exceptions_kwargs=False
+            ))
             self.discard_subset_failing_expectations = other.discard_subset_failing_expectations
             if self.discard_subset_failing_expectations:
                 self.discard_failing_expectations()
