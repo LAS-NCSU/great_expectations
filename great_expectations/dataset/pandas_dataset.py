@@ -16,15 +16,19 @@ from scipy import stats
 from six import string_types
 
 from .base import Dataset
-from .util import DocInherit, parse_result_format, \
-        is_valid_partition_object, is_valid_categorical_partition_object, is_valid_continuous_partition_object
+from .util import DocInherit, recursively_convert_to_json_serializable, \
+        is_valid_partition_object, is_valid_categorical_partition_object, is_valid_continuous_partition_object, \
+        infer_distribution_parameters, _scipy_distribution_positional_args_from_dict, validate_distribution_parameters,\
+        parse_result_format, create_multiple_expectations
+
 
 class MetaPandasDataset(Dataset):
-    """
-    MetaPandasDataset is a thin layer between Dataset and PandasDataset. This two-layer inheritance is required to make @classmethod decorators work.
+    """MetaPandasDataset is a thin layer between Dataset and PandasDataset.
 
-    Practically speaking, that means that MetaPandasDataset implements
-    expectation decorators, like `column_map_expectation` and `column_aggregate_expectation`,
+    This two-layer inheritance is required to make @classmethod decorators work.
+
+    Practically speaking, that means that MetaPandasDataset implements \
+    expectation decorators, like `column_map_expectation` and `column_aggregate_expectation`, \
     and PandasDataset implements the expectation methods themselves.
     """
 
@@ -52,6 +56,8 @@ class MetaPandasDataset(Dataset):
             if result_format is None:
                 result_format = self.default_expectation_args["result_format"]
 
+            result_format = parse_result_format(result_format)
+        
             series = self[column]
             boolean_mapped_null_values = series.isnull()
 
@@ -80,6 +86,67 @@ class MetaPandasDataset(Dataset):
 
         return inner_wrapper
 
+    @classmethod
+    def column_pair_map_expectation(cls, func):
+        """
+        The column_pair_map_expectation decorator handles boilerplate issues surrounding the common pattern of evaluating
+        truthiness of some condition on a per row basis across a pair of columns.
+        """
+
+        @cls.expectation(inspect.getargspec(func)[0][1:])
+        @wraps(func)
+        def inner_wrapper(self, column_A, column_B, mostly=None, ignore_row_if="both_values_are_missing", result_format=None, *args, **kwargs):
+
+            if result_format is None:
+                result_format = self.default_expectation_args["result_format"]
+
+            series_A = self[column_A]
+            series_B = self[column_B]
+
+            if ignore_row_if=="both_values_are_missing":
+                boolean_mapped_null_values = series_A.isnull() & series_B.isnull()
+            elif ignore_row_if=="either_value_is_missing":
+                boolean_mapped_null_values = series_A.isnull() | series_B.isnull()
+            elif ignore_row_if=="never":
+                boolean_mapped_null_values = series_A.map(lambda x: False)
+            else:
+                raise ValueError("Unknown value of ignore_row_if: %s", (ignore_row_if,))
+
+            assert len(series_A) == len(series_B), "Series A and B must be the same length"
+
+            #This next bit only works if series_A and _B are the same length
+            element_count = int(len(series_A)) 
+            nonnull_count = (boolean_mapped_null_values==False).sum()
+            
+            nonnull_values_A = series_A[boolean_mapped_null_values==False]
+            nonnull_values_B = series_B[boolean_mapped_null_values==False]
+            nonnull_values = [value_pair for value_pair in zip(
+                list(nonnull_values_A),
+                list(nonnull_values_B)
+            )]
+
+            boolean_mapped_success_values = func(self, nonnull_values_A, nonnull_values_B, *args, **kwargs)
+            success_count = boolean_mapped_success_values.sum()
+
+            unexpected_list = [value_pair for value_pair in zip(
+                list(series_A[(boolean_mapped_success_values==False)&(boolean_mapped_null_values==False)]),
+                list(series_B[(boolean_mapped_success_values==False)&(boolean_mapped_null_values==False)])
+            )]
+            unexpected_index_list = list(series_A[(boolean_mapped_success_values==False)&(boolean_mapped_null_values==False)].index)
+
+            success, percent_success = self._calc_map_expectation_success(success_count, nonnull_count, mostly)
+
+            return_obj = self._format_column_map_output(
+                result_format, success,
+                element_count, nonnull_count,
+                unexpected_list, unexpected_index_list
+            )
+
+            return return_obj
+
+        inner_wrapper.__name__ = func.__name__
+        inner_wrapper.__doc__ = func.__doc__
+        return inner_wrapper
 
     @classmethod
     def column_aggregate_expectation(cls, func):
@@ -152,13 +219,15 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
 
     For the full API reference, please see :func:`Dataset <great_expectations.Dataset.base.Dataset>`
 
-    NB
-    1. Samples and Subsets of PandaDataSet have ALL the expectations of the original
-       data frame unless the user specifies the discard_subset_failing_expectations=True
-       property on the original data frame.
-    2. Concatenations, joins, and merges of PandaDataSets ONLY contain the
-       default_expectations (see :func: `add_default_expectations`)
+    Notes:
+        1. Samples and Subsets of PandaDataSet have ALL the expectations of the original \
+           data frame unless the user specifies the ``discard_subset_failing_expectations = True`` \
+           property on the original data frame.
+        2. Concatenations, joins, and merges of PandaDataSets ONLY contain the \
+           default_expectations (see :func:`add_default_expectations`)
     """
+
+    discard_failed_expectations = False
 
     @property
     def _constructor(self):
@@ -168,7 +237,7 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
 
     def __finalize__(self, other, method=None, **kwargs):
         if isinstance(other, PandasDataset):
-            self.initialize_expectations(other.get_expectations_config(
+            self._initialize_expectations(other.get_expectations_config(
                 discard_failed_expectations=False,
                 discard_result_format_kwargs=False,
                 discard_include_configs_kwargs=False,
@@ -188,20 +257,13 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
         """
         The default behavior for PandasDataset is to explicitly include expectations that every column present upon initialization exists.
         """
-
-        for col in self.columns:
-            self.append_expectation({
-                "expectation_type": "expect_column_to_exist",
-                "kwargs": {
-                    "column": col
-                }
-            })
+        create_multiple_expectations(self, self.columns, "expect_column_to_exist")
 
     ### Expectation methods ###
     @DocInherit
     @Dataset.expectation(['column'])
     def expect_column_to_exist(
-            self, column, column_index=None, result_format=None, include_config=False, 
+            self, column, column_index=None, result_format=None, include_config=False,
             catch_exceptions=None, meta=None
     ):
 
@@ -210,6 +272,20 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
                 "success": (column_index is None) or (self.columns.get_loc(column) == column_index)
             }
 
+        else:
+            return {
+                "success": False
+            }
+
+    @DocInherit
+    @Dataset.expectation(['column_list'])
+    def expect_table_columns_to_match_ordered_list(self, column_list,
+                               result_format=None, include_config=False, catch_exceptions=None, meta=None):
+
+        if list(self.columns) == list(column_list):
+            return {
+                "success" : True
+            }
         else:
             return {
                 "success": False
@@ -294,31 +370,38 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
                                             result_format=None, include_config=False, catch_exceptions=None, meta=None):
         if result_format is None:
             result_format = self.default_expectation_args["result_format"]
+        result_format = parse_result_format(result_format)
 
         series = self[column]
         boolean_mapped_null_values = series.isnull()
 
-        element_count = int(len(series))
-        nonnull_values = series[boolean_mapped_null_values==False]
-        nonnull_count = int((boolean_mapped_null_values==False).sum())
+        element_count = len(series)
+        success_count = sum(~boolean_mapped_null_values)
+        unexpected_count = element_count - success_count
 
-        boolean_mapped_success_values = boolean_mapped_null_values==False
-        success_count = boolean_mapped_success_values.sum()
-
-        unexpected_list = [None for i in list(series[(boolean_mapped_success_values==False)])]
-        unexpected_index_list = list(series[(boolean_mapped_success_values==False)].index)
-        unexpected_count = len(unexpected_list)
+        unexpected_list = [None for i in range(unexpected_count)]
+        unexpected_index_list = series[boolean_mapped_null_values].index
 
         # Pass element_count instead of nonnull_count, because that's the right denominator for this expectation
         success, percent_success = self._calc_map_expectation_success(success_count, element_count, mostly)
 
-        return_obj = self._format_column_map_output(
-            result_format, success,
-            element_count, nonnull_count,
-            unexpected_list, unexpected_index_list
-        )
+        return {
+            "success": success,
+            "result": {
+                "element_count": element_count,
+                "missing_count": unexpected_count,
+                "missing_percent": float(unexpected_count) / element_count,
+                "unexpected_count": unexpected_count,
+                "unexpected_percent": float(unexpected_count) / element_count,
+                "partial_unexpected_list":
+                    unexpected_list[:result_format['partial_unexpected_count']],
+                "partial_unexpected_index_list":
+                    unexpected_index_list[:result_format['partial_unexpected_count']],
+                "unexpected_list": unexpected_list,
+                "unexpected_index_list": unexpected_index_list
+            }
+        }
 
-        return return_obj
 
     @DocInherit
     @Dataset.expectation(['column', 'mostly', 'result_format'])
@@ -327,31 +410,37 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
                                         result_format=None, include_config=False, catch_exceptions=None, meta=None):
         if result_format is None:
             result_format = self.default_expectation_args["result_format"]
+        result_format = parse_result_format(result_format)
 
         series = self[column]
         boolean_mapped_null_values = series.isnull()
 
-        element_count = int(len(series))
-        nonnull_values = series[boolean_mapped_null_values==False]
-        nonnull_count = (boolean_mapped_null_values==False).sum()
+        element_count = len(series)
+        success_count = sum(boolean_mapped_null_values)
+        unexpected_count = element_count - success_count
 
-        boolean_mapped_success_values = boolean_mapped_null_values
-        success_count = boolean_mapped_success_values.sum()
-
-        unexpected_list = list(series[(boolean_mapped_success_values==False)])
-        unexpected_index_list = list(series[(boolean_mapped_success_values==False)].index)
-        unexpected_count = len(unexpected_list)
+        unexpected_list = [x for x in series[~boolean_mapped_null_values]]
+        unexpected_index_list = series[~boolean_mapped_null_values].index
 
         # Pass element_count instead of nonnull_count, because that's the right denominator for this expectation
         success, percent_success = self._calc_map_expectation_success(success_count, element_count, mostly)
 
-        return_obj = self._format_column_map_output(
-            result_format, success,
-            element_count, nonnull_count,
-            unexpected_list, unexpected_index_list
-        )
-
-        return return_obj
+        return {
+            "success": success,
+            "result": {
+                "element_count": element_count,
+                "missing_count": unexpected_count,
+                "missing_percent": float(unexpected_count) / element_count,
+                "unexpected_count": unexpected_count,
+                "unexpected_percent": float(unexpected_count) / element_count,
+                "partial_unexpected_list":
+                    unexpected_list[:result_format['partial_unexpected_count']],
+                "partial_unexpected_index_list":
+                    unexpected_index_list[:result_format['partial_unexpected_count']],
+                "unexpected_list": unexpected_list,
+                "unexpected_index_list": unexpected_index_list
+            }
+        }
 
     @DocInherit
     @MetaPandasDataset.column_map_expectation
@@ -641,7 +730,7 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
         if match_on=="any":
 
             def match_in_list(val):
-                if any(re.match(regex, str(val)) for regex in regex_list):
+                if any(re.findall(regex, str(val)) for regex in regex_list):
                     return True
                 else:
                     return False
@@ -649,12 +738,22 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
         elif match_on=="all":
 
             def match_in_list(val):
-                if all(re.match(regex, str(val)) for regex in regex_list):
+                if all(re.findall(regex, str(val)) for regex in regex_list):
                     return True
                 else:
                     return False
 
         return column.map(match_in_list)
+
+    @DocInherit
+    @MetaPandasDataset.column_map_expectation
+    def expect_column_values_to_not_match_regex_list(self, column, regex_list,
+                                                 mostly=None,
+                                                 result_format=None, include_config=False, catch_exceptions=None, meta=None):
+        return column.map(
+            lambda x: not any([re.findall(regex, str(x)) for regex in regex_list])
+        )
+
 
     @DocInherit
     @MetaPandasDataset.column_map_expectation
@@ -731,6 +830,42 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
 
         return column.map(matches_json_schema)
 
+    @DocInherit
+    @MetaPandasDataset.column_aggregate_expectation
+    def expect_column_parameterized_distribution_ks_test_p_value_to_be_greater_than(self, column, distribution,
+                                                                                    p_value=0.05, params=None,
+                                                                                    result_format=None,
+                                                                                    include_config=False,
+                                                                                    catch_exceptions=None, meta=None):
+        if p_value <= 0 or p_value >= 1:
+            raise ValueError("p_value must be between 0 and 1 exclusive")
+
+        # Validate params
+        try:
+            validate_distribution_parameters(distribution=distribution, params=params)
+        except ValueError as e:
+            raise e
+
+        # Format arguments for scipy.kstest
+        if (isinstance(params, dict)):
+            positional_parameters = _scipy_distribution_positional_args_from_dict(distribution, params)
+        else:
+            positional_parameters = params
+
+        # K-S Test
+        ks_result = stats.kstest(column, distribution,
+                                 args=positional_parameters)
+
+        return {
+            "success": ks_result[1] >= p_value,
+            "result": {
+                "observed_value": ks_result[1],
+                "details": {
+                    "expected_params": positional_parameters,
+                    "observed_ks_result": ks_result
+                }
+            }
+        }
 
     @DocInherit
     @MetaPandasDataset.column_aggregate_expectation
@@ -770,8 +905,8 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
 
         return {
             "success": (
-                ((min_value or None) or (min_value <= column_median)) and
-                ((max_value or None) or (column_median <= max_value))
+                ((min_value is None) or (min_value <= column_median)) and
+                ((max_value is None) or (column_median <= max_value))
             ),
             "result":{
                 "observed_value": column_median
@@ -1246,5 +1381,71 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
                     }
                 }
 
-
         return return_obj
+
+
+    @DocInherit
+    @MetaPandasDataset.column_pair_map_expectation
+    def expect_column_pair_values_to_be_equal(self,
+        column_A,
+        column_B,
+        ignore_row_if="both_values_are_missing",
+        result_format=None, include_config=False, catch_exceptions=None, meta=None
+    ):
+        return column_A == column_B
+
+    @DocInherit
+    @MetaPandasDataset.column_pair_map_expectation
+    def expect_column_pair_values_A_to_be_greater_than_B(self,
+        column_A,
+        column_B,
+        or_equal=None,
+        parse_strings_as_datetimes=None,
+        allow_cross_type_comparisons=None,
+        ignore_row_if="both_values_are_missing",
+        result_format=None, include_config=False, catch_exceptions=None, meta=None
+    ):
+        #FIXME
+        if allow_cross_type_comparisons==True:
+            raise NotImplementedError
+        
+        if parse_strings_as_datetimes:
+            temp_column_A = column_A.map(parse)
+            temp_column_B = column_B.map(parse)
+
+        else:
+            temp_column_A = column_A
+            temp_column_B = column_B
+
+        if or_equal==True:
+            return temp_column_A >= temp_column_B
+        else:
+            return temp_column_A > temp_column_B
+
+    @DocInherit
+    @MetaPandasDataset.column_pair_map_expectation
+    def expect_column_pair_values_to_be_in_set(self,
+        column_A,
+        column_B,
+        value_pairs_set,
+        ignore_row_if="both_values_are_missing",
+        result_format=None, include_config=False, catch_exceptions=None, meta=None
+    ):
+        temp_df = pd.DataFrame({"A": column_A, "B": column_B})
+        value_pairs_set = {(x,y) for x,y in value_pairs_set}
+
+        results = []
+        for i, t in temp_df.iterrows():
+            if pd.isnull(t["A"]):
+                a = None
+            else:
+                a = t["A"]
+                
+            if pd.isnull(t["B"]):
+                b = None
+            else:
+                b = t["B"]
+                
+            results.append((a, b) in value_pairs_set)
+
+        return pd.Series(results, temp_df.index)

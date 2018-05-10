@@ -5,7 +5,7 @@ from great_expectations.dataset import Dataset
 from functools import wraps
 import inspect
 
-from .util import DocInherit, parse_result_format
+from .util import DocInherit, parse_result_format, create_multiple_expectations
 
 import sqlalchemy as sa
 from sqlalchemy.engine import reflection
@@ -148,7 +148,7 @@ class MetaSqlAlchemyDataset(Dataset):
 
 class SqlAlchemyDataset(MetaSqlAlchemyDataset):
 
-    def __init__(self, table_name=None, engine=None, connection_string=None):
+    def __init__(self, table_name=None, engine=None, connection_string=None, custom_sql=None):
         super(SqlAlchemyDataset, self).__init__()
 
         if table_name is None:
@@ -169,21 +169,30 @@ class SqlAlchemyDataset(MetaSqlAlchemyDataset):
                 # Currently we do no error handling if the engine doesn't work out of the box.
                 raise err
 
+        if custom_sql:
+            self.create_temporary_table(self.table_name, custom_sql)
+
         insp = reflection.Inspector.from_engine(engine)
         self.columns = insp.get_columns(self.table_name)
+
+    def create_temporary_table(self, table_name, custom_sql):
+        """
+        Create Temporary table based on sql query. This will be used as a basis for executing expectations.
+        WARNING: this feature is new in v0.4.
+        It hasn't been tested in all SQL dialects, and may change based on community feedback.
+        :param custom_sql:
+        """
+        stmt = "CREATE TEMPORARY TABLE IF NOT EXISTS {table_name} AS {custom_sql}".format(
+            table_name=table_name, custom_sql=custom_sql)
+        self.engine.execute(stmt)
 
     def add_default_expectations(self):
         """
         The default behavior for SqlAlchemyDataset is to explicitly include expectations that every column present upon
         initialization exists.
         """
-        for col in self.columns:
-            self.append_expectation({
-                "expectation_type": "expect_column_to_exist",
-                "kwargs": {
-                    "column": col["name"]
-                }
-            })
+        columns = [col['name'] for col in self.columns]
+        create_multiple_expectations(self, columns, "expect_column_to_exist")
 
     def _is_numeric_column(self, column):
         for col in self.columns:
@@ -269,6 +278,20 @@ class SqlAlchemyDataset(MetaSqlAlchemyDataset):
                 'observed_value': row_count
             }
         }
+
+    @DocInherit
+    @Dataset.expectation(['column_list'])
+    def expect_table_columns_to_match_ordered_list(self, column_list,
+                               result_format=None, include_config=False, catch_exceptions=None, meta=None):
+
+        if [col['name'] for col in self.columns] == list(column_list):
+            return {
+                "success" : True
+            }
+        else:
+            return {
+                "success": False
+            }
 
     @DocInherit
     @Dataset.expectation(['column'])
