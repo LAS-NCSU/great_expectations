@@ -1,3 +1,4 @@
+import decimal
 import json
 import tempfile
 import shutil
@@ -14,7 +15,7 @@ class TestDataset(unittest.TestCase):
 
     def test_dataset(self):
 
-        D = ge.dataset.PandasDataSet({
+        D = ge.dataset.PandasDataset({
             'x' : [1,2,4],
             'y' : [1,2,5],
             'z' : ['hello', 'jello', 'mello'],
@@ -32,13 +33,16 @@ class TestDataset(unittest.TestCase):
                 },
                 "expectations" : [{
                     "expectation_type" : "expect_column_to_exist",
-                    "kwargs" : { "column" : "x" }
+                    "kwargs" : { "column" : "x", 'result_format': 'BASIC'},
+                    'success_on_last_run': True
                 },{
                     "expectation_type" : "expect_column_to_exist",
-                    "kwargs" : { "column" : "y" }
+                    "kwargs" : { "column" : "y", 'result_format': 'BASIC'},
+                    'success_on_last_run': True
                 },{
                     "expectation_type" : "expect_column_to_exist",
-                    "kwargs" : { "column" : "z" }
+                    "kwargs" : { "column" : "z", 'result_format': 'BASIC'},
+                    'success_on_last_run': True
                 }]
             }
         )
@@ -53,19 +57,19 @@ class TestDataset(unittest.TestCase):
                 },
                 "expectations" : [{
                     "expectation_type" : "expect_column_to_exist",
-                    "kwargs" : { "column" : "x" }
+                    "kwargs" : { "column" : "x"}
                 },{
                     "expectation_type" : "expect_column_to_exist",
-                    "kwargs" : { "column" : "y" }
+                    "kwargs" : { "column" : "y"}
                 },{
                     "expectation_type" : "expect_column_to_exist",
-                    "kwargs" : { "column" : "z" }
+                    "kwargs" : { "column" : "z"}
                 }]
             }
         )
 
     def test_expectation_meta(self):
-        df = ge.dataset.PandasDataSet({
+        df = ge.dataset.PandasDataset({
             'x' : [1,2,4],
             'y' : [1,2,5],
             'z' : ['hello', 'jello', 'mello'],
@@ -95,7 +99,7 @@ class TestDataset(unittest.TestCase):
     #TODO: !!! Add tests for save_expectation
 
     def test_set_default_expectation_argument(self):
-        df = ge.dataset.PandasDataSet({
+        df = ge.dataset.PandasDataset({
             'x' : [1,2,4],
             'y' : [1,2,5],
             'z' : ['hello', 'jello', 'mello'],
@@ -106,25 +110,25 @@ class TestDataset(unittest.TestCase):
             {
                 "include_config" : False,
                 "catch_exceptions" : False,
-                "output_format" : 'BASIC',
+                "result_format" : 'BASIC',
             }
         )
 
-        df.set_default_expectation_argument("output_format", "SUMMARY")
+        df.set_default_expectation_argument("result_format", "SUMMARY")
 
         self.assertEqual(
             df.get_default_expectation_arguments(),
             {
                 "include_config" : False,
                 "catch_exceptions" : False,
-                "output_format" : 'SUMMARY',
+                "result_format" : 'SUMMARY',
             }
         )
 
     def test_get_and_save_expectation_config(self):
         directory_name = tempfile.mkdtemp()
 
-        df = ge.dataset.PandasDataSet({
+        df = ge.dataset.PandasDataset({
             'x' : [1,2,4],
             'y' : [1,2,5],
             'z' : ['hello', 'jello', 'mello'],
@@ -138,42 +142,42 @@ class TestDataset(unittest.TestCase):
         output_config = {
           "expectations": [
             {
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "x"
               }
-            }, 
+            },
             {
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "y"
               }
-            }, 
+            },
             {
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "z"
               }
-            }, 
+            },
             {
-              "expectation_type": "expect_column_values_to_be_in_set", 
+              "expectation_type": "expect_column_values_to_be_in_set",
               "kwargs": {
-                "column": "x", 
+                "column": "x",
                 "values_set": [
-                  1, 
-                  2, 
+                  1,
+                  2,
                   4
                 ]
               }
-            }, 
+            },
             {
-              "expectation_type": "expect_column_values_to_match_regex", 
+              "expectation_type": "expect_column_values_to_match_regex",
               "kwargs": {
-                "column": "z", 
+                "column": "z",
                 "regex": "ello"
               }
             }
-          ], 
+          ],
           "dataset_name": None,
           "meta": {
             "great_expectations.__version__": ge.__version__
@@ -198,53 +202,53 @@ class TestDataset(unittest.TestCase):
         output_config = {
           "expectations": [
             {
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "x"
               }
-            }, 
+            },
             {
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "y"
               }
-            }, 
+            },
             {
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "z"
               }
-            }, 
+            },
             {
-              "expectation_type": "expect_column_values_to_be_in_set", 
+              "expectation_type": "expect_column_values_to_be_in_set",
               "kwargs": {
-                "column": "x", 
+                "column": "x",
                 "values_set": [
-                  1, 
-                  2, 
+                  1,
+                  2,
                   4
                 ]
               }
-            }, 
+            },
             {
-              "expectation_type": "expect_column_values_to_be_in_set", 
+              "expectation_type": "expect_column_values_to_be_in_set",
               "kwargs": {
-                "column": "y", 
+                "column": "y",
                 "values_set": [
-                  1, 
-                  2, 
+                  1,
+                  2,
                   4
                 ]
               }
-            }, 
+            },
             {
-              "expectation_type": "expect_column_values_to_match_regex", 
+              "expectation_type": "expect_column_values_to_match_regex",
               "kwargs": {
-                "column": "z", 
+                "column": "z",
                 "regex": "ello"
               }
             }
-          ], 
+          ],
           "dataset_name": None,
           "meta": {
             "great_expectations.__version__": ge.__version__
@@ -274,44 +278,47 @@ class TestDataset(unittest.TestCase):
         output_config = {
           "expectations": [
             {
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
-                "column": "x"
+                "column": "x",
+                "result_format": "BASIC"
               }
-            }, 
+            },
             {
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
-                "column": "y"
+                "column": "y",
+                "result_format": "BASIC"
               }
-            }, 
+            },
             {
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
-                "column": "z"
+                "column": "z",
+                "result_format": "BASIC"
               }
-            }, 
+            },
             {
-              "expectation_type": "expect_column_values_to_be_in_set", 
+              "expectation_type": "expect_column_values_to_be_in_set",
               "kwargs": {
-                "column": "x", 
+                "column": "x",
                 "values_set": [
-                  1, 
-                  2, 
+                  1,
+                  2,
                   4
-                ], 
-                "output_format": "BASIC"
+                ],
+                "result_format": "BASIC"
               }
-            }, 
+            },
             {
-              "expectation_type": "expect_column_values_to_match_regex", 
+              "expectation_type": "expect_column_values_to_match_regex",
               "kwargs": {
-                "column": "z", 
-                "regex": "ello", 
-                "output_format": "BASIC"
+                "column": "z",
+                "regex": "ello",
+                "result_format": "BASIC"
               }
             }
-          ], 
+          ],
           "dataset_name": None,
           "meta": {
             "great_expectations.__version__": ge.__version__
@@ -320,16 +327,17 @@ class TestDataset(unittest.TestCase):
 
         self.assertEqual(
             df.get_expectations_config(
-                discard_output_format_kwargs=False,
+                discard_result_format_kwargs=False,
                 discard_include_configs_kwargs=False,
                 discard_catch_exceptions_kwargs=False,
             ),
-            output_config
+            output_config,
+            msg="Second Test Set"
         )
 
         df.save_expectations_config(
           directory_name+'/temp3.json',
-          discard_output_format_kwargs=False,
+          discard_result_format_kwargs=False,
           discard_include_configs_kwargs=False,
           discard_catch_exceptions_kwargs=False,
         )
@@ -344,7 +352,7 @@ class TestDataset(unittest.TestCase):
         shutil.rmtree(directory_name)
 
     def test_format_column_map_output(self):
-        df = ge.dataset.PandasDataSet({
+        df = ge.dataset.PandasDataset({
             "x" : list("abcdefghijklmnopqrstuvwxyz"),
         })
         self.maxDiff = None
@@ -357,37 +365,60 @@ class TestDataset(unittest.TestCase):
         nonnull_count = 15
         boolean_mapped_success_values = pd.Series([True for i in range(15)])
         success_count = 15
-        exception_list = []
-        exception_index_list = []
+        unexpected_list = []
+        unexpected_index_list = []
 
         self.assertEqual(
             df._format_column_map_output(
                 "BOOLEAN_ONLY",
                 success,
-                element_count,
-                nonnull_values, nonnull_count,
-                boolean_mapped_success_values, success_count,
-                exception_list, exception_index_list
+                element_count, nonnull_count,
+                unexpected_list, unexpected_index_list
             ),
-            True
+            {'success': True}
         )
 
         self.assertEqual(
             df._format_column_map_output(
                 "BASIC",
                 success,
-                element_count,
-                nonnull_values, nonnull_count,
-                boolean_mapped_success_values, success_count,
-                exception_list, exception_index_list
+                element_count, nonnull_count,
+                unexpected_list, unexpected_index_list
             ),
             {
                 'success': True,
-                'summary_obj': {
-                    'exception_percent': 0.0,
-                    'partial_exception_list': [],
-                    'exception_percent_nonmissing': 0.0,
-                    'exception_count': 0
+                'result': {
+                    'element_count': 20,
+                    'missing_count': 5,
+                    'missing_percent': 0.25,
+                    'partial_unexpected_list': [],
+                    'unexpected_count': 0,
+                    'unexpected_percent': 0.0,
+                    'unexpected_percent_nonmissing': 0.0
+                }
+            }
+        )
+
+        self.assertEqual(
+            df._format_column_map_output(
+                "SUMMARY",
+                success,
+                element_count,
+                nonnull_count,
+                unexpected_list, unexpected_index_list
+            ),
+            {
+                'success': True,
+                'result': {
+                    'element_count': 20,
+                    'missing_count': 5,
+                    'missing_percent': 0.25,
+                    'partial_unexpected_list': [],
+                    'unexpected_count': 0,
+                    'unexpected_percent': 0.0,
+                    'unexpected_percent_nonmissing': 0.0,
+                    'partial_unexpected_index_list': [],
+                    'partial_unexpected_counts': []
                 }
             }
         )
@@ -397,39 +428,25 @@ class TestDataset(unittest.TestCase):
                 "COMPLETE",
                 success,
                 element_count,
-                nonnull_values, nonnull_count,
-                boolean_mapped_success_values, success_count,
-                exception_list, exception_index_list
+                nonnull_count,
+                unexpected_list, unexpected_index_list
             ),
             {
                 'success': True,
-                'exception_list': [],
-                'exception_index_list': [],
-            }
-        )
-
-        self.assertEqual(
-            df._format_column_map_output(
-                "SUMMARY",
-                success,
-                element_count,
-                nonnull_values, nonnull_count,
-                boolean_mapped_success_values, success_count,
-                exception_list, exception_index_list
-            ),
-            {
-                'success': True,
-                'summary_obj': {
-                    'element_count': 20,
-                    'exception_count': 0,
-                    'exception_percent': 0.0,
-                    'exception_percent_nonmissing': 0.0,
-                    'missing_count': 5,
-                    'missing_percent': 0.25,
-                    'partial_exception_counts': [],
-                    'partial_exception_index_list': [],
-                    'partial_exception_list': []
-                }
+                'result':
+                    {
+                        'element_count': 20,
+                        'missing_count': 5,
+                        'missing_percent': 0.25,
+                        'partial_unexpected_list': [],
+                        'unexpected_count': 0,
+                        'unexpected_percent': 0.0,
+                        'unexpected_percent_nonmissing': 0.0,
+                        'partial_unexpected_index_list': [],
+                        'partial_unexpected_counts': [],
+                        'unexpected_list': [],
+                        'unexpected_index_list': []
+                    }
             }
         )
 
@@ -441,19 +458,18 @@ class TestDataset(unittest.TestCase):
         nonnull_count = 0
         boolean_mapped_success_values = pd.Series([])
         success_count = 0
-        exception_list = []
-        exception_index_list = []
+        unexpected_list = []
+        unexpected_index_list = []
 
         self.assertEqual(
             df._format_column_map_output(
                 "BOOLEAN_ONLY",
                 success,
                 element_count,
-                nonnull_values, nonnull_count,
-                boolean_mapped_success_values, success_count,
-                exception_list, exception_index_list
+                nonnull_count,
+                unexpected_list, unexpected_index_list
             ),
-            True
+            {'success': True}
         )
 
         self.assertEqual(
@@ -461,17 +477,43 @@ class TestDataset(unittest.TestCase):
                 "BASIC",
                 success,
                 element_count,
-                nonnull_values, nonnull_count,
-                boolean_mapped_success_values, success_count,
-                exception_list, exception_index_list
+                nonnull_count,
+                unexpected_list, unexpected_index_list
             ),
             {
                 'success': True,
-                'summary_obj': {
-                    'exception_percent': 0.0,
-                    'partial_exception_list': [],
-                    'exception_percent_nonmissing': None,
-                    'exception_count': 0
+                'result': {
+                    'element_count': 20,
+                    'missing_count': 20,
+                    'missing_percent': 1,
+                    'partial_unexpected_list': [],
+                    'unexpected_count': 0,
+                    'unexpected_percent': 0.0,
+                    'unexpected_percent_nonmissing': None
+                }
+            }
+        )
+
+        self.assertEqual(
+            df._format_column_map_output(
+                "SUMMARY",
+                success,
+                element_count,
+                nonnull_count,
+                unexpected_list, unexpected_index_list
+            ),
+            {
+                'success': True,
+                'result': {
+                    'element_count': 20,
+                    'missing_count': 20,
+                    'missing_percent': 1,
+                    'partial_unexpected_list': [],
+                    'unexpected_count': 0,
+                    'unexpected_percent': 0.0,
+                    'unexpected_percent_nonmissing': None,
+                    'partial_unexpected_index_list': [],
+                    'partial_unexpected_counts': []
                 }
             }
         )
@@ -481,38 +523,23 @@ class TestDataset(unittest.TestCase):
                 "COMPLETE",
                 success,
                 element_count,
-                nonnull_values, nonnull_count,
-                boolean_mapped_success_values, success_count,
-                exception_list, exception_index_list
+                nonnull_count,
+                unexpected_list, unexpected_index_list
             ),
             {
                 'success': True,
-                'exception_list': [],
-                'exception_index_list': [],
-            }
-        )
-
-        self.assertEqual(
-            df._format_column_map_output(
-                "SUMMARY",
-                success,
-                element_count,
-                nonnull_values, nonnull_count,
-                boolean_mapped_success_values, success_count,
-                exception_list, exception_index_list
-            ),
-            {
-                'success': True,
-                'summary_obj': {
+                'result': {
                     'element_count': 20,
-                    'exception_count': 0,
-                    'exception_percent': 0.0,
-                    'exception_percent_nonmissing': None,
                     'missing_count': 20,
-                    'missing_percent': 1.0,
-                    'partial_exception_counts': [],
-                    'partial_exception_index_list': [],
-                    'partial_exception_list': []
+                    'missing_percent': 1,
+                    'partial_unexpected_list': [],
+                    'unexpected_count': 0,
+                    'unexpected_percent': 0.0,
+                    'unexpected_percent_nonmissing': None,
+                    'partial_unexpected_index_list': [],
+                    'partial_unexpected_counts': [],
+                    'unexpected_list': [],
+                    'unexpected_index_list': []
                 }
             }
         )
@@ -525,19 +552,18 @@ class TestDataset(unittest.TestCase):
         nonnull_count = 0
         boolean_mapped_success_values = pd.Series([])
         success_count = 0
-        exception_list = []
-        exception_index_list = []
+        unexpected_list = []
+        unexpected_index_list = []
 
         self.assertEqual(
             df._format_column_map_output(
                 "BOOLEAN_ONLY",
                 success,
                 element_count,
-                nonnull_values, nonnull_count,
-                boolean_mapped_success_values, success_count,
-                exception_list, exception_index_list
+                nonnull_count,
+                unexpected_list, unexpected_index_list
             ),
-            False
+            {'success': False}
         )
 
         self.assertEqual(
@@ -545,17 +571,43 @@ class TestDataset(unittest.TestCase):
                 "BASIC",
                 success,
                 element_count,
-                nonnull_values, nonnull_count,
-                boolean_mapped_success_values, success_count,
-                exception_list, exception_index_list
+                nonnull_count,
+                unexpected_list, unexpected_index_list
             ),
             {
                 'success': False,
-                'summary_obj': {
-                    'exception_percent': None,
-                    'partial_exception_list': [],
-                    'exception_percent_nonmissing': None,
-                    'exception_count': 0
+                'result': {
+                    'element_count': 0,
+                    'missing_count': 0,
+                    'missing_percent': None,
+                    'partial_unexpected_list': [],
+                    'unexpected_count': 0,
+                    'unexpected_percent': None,
+                    'unexpected_percent_nonmissing': None
+                }
+            }
+        )
+
+        self.assertEqual(
+            df._format_column_map_output(
+                "SUMMARY",
+                success,
+                element_count,
+                nonnull_count,
+                unexpected_list, unexpected_index_list
+            ),
+            {
+                'success': False,
+                'result': {
+                    'element_count': 0,
+                    'missing_count': 0,
+                    'missing_percent': None,
+                    'partial_unexpected_list': [],
+                    'unexpected_count': 0,
+                    'unexpected_percent': None,
+                    'unexpected_percent_nonmissing': None,
+                    'partial_unexpected_counts': [],
+                    'partial_unexpected_index_list': []
                 }
             }
         )
@@ -565,44 +617,29 @@ class TestDataset(unittest.TestCase):
                 "COMPLETE",
                 success,
                 element_count,
-                nonnull_values, nonnull_count,
-                boolean_mapped_success_values, success_count,
-                exception_list, exception_index_list
+                nonnull_count,
+                unexpected_list, unexpected_index_list
             ),
             {
                 'success': False,
-                'exception_list': [],
-                'exception_index_list': [],
-            }
-        )
-
-        self.assertEqual(
-            df._format_column_map_output(
-                "SUMMARY",
-                success,
-                element_count,
-                nonnull_values, nonnull_count,
-                boolean_mapped_success_values, success_count,
-                exception_list, exception_index_list
-            ),
-            {
-                'success': False,
-                'summary_obj': {
+                'result': {
                     'element_count': 0,
-                    'exception_count': 0,
-                    'exception_percent': None,
-                    'exception_percent_nonmissing': None,
                     'missing_count': 0,
                     'missing_percent': None,
-                    'partial_exception_counts': [],
-                    'partial_exception_index_list': [],
-                    'partial_exception_list': []
+                    'partial_unexpected_list': [],
+                    'unexpected_count': 0,
+                    'unexpected_percent': None,
+                    'unexpected_percent_nonmissing': None,
+                    'partial_unexpected_counts': [],
+                    'partial_unexpected_index_list': [],
+                    'unexpected_list': [],
+                    'unexpected_index_list': []
                 }
             }
         )
 
     def test_calc_map_expectation_success(self):
-        df = ge.dataset.PandasDataSet({
+        df = ge.dataset.PandasDataset({
             "x" : list("abcdefghijklmnopqrstuvwxyz")
         })
         self.assertEqual(
@@ -659,8 +696,13 @@ class TestDataset(unittest.TestCase):
             (False, 0.0)
         )
 
+        self.assertEqual(
+            df._calc_map_expectation_success(success_count=decimal.Decimal(80), nonnull_count=100, mostly=.8),
+            (False, decimal.Decimal(80) / decimal.Decimal(100))
+        )
+
     def test_find_expectations(self):
-        my_df = ge.dataset.PandasDataSet({
+        my_df = ge.dataset.PandasDataset({
             'x' : [1,2,3,4,5,6,7,8,9,10],
             'y' : [1,2,None,4,None,6,7,8,9,None],
             'z' : ['cello', 'hello', 'jello', 'bellow', 'fellow', 'mellow', 'wellow', 'xello', 'yellow', 'zello'],
@@ -679,7 +721,7 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(
             my_df.find_expectations("expect_column_to_exist", "x", expectation_kwargs={}),
             [{
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "x"
               }
@@ -689,7 +731,7 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(
             my_df.find_expectations("expect_column_to_exist", expectation_kwargs={"column": "y"}),
             [{
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "y"
               }
@@ -699,23 +741,23 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(
             my_df.find_expectations("expect_column_to_exist"),
             [{
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "x"
               }
             },{
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "y"
               }
             },{
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "z"
               }
             }]
         )
-        
+
         with self.assertRaises(Exception) as context:
             my_df.find_expectations("expect_column_to_exist", "x", {"column": "y"})
 
@@ -727,19 +769,19 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(
             my_df.find_expectations(column="x"),
             [{
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "x"
               }
             },{
-              "expectation_type": "expect_column_values_to_be_of_type", 
+              "expectation_type": "expect_column_values_to_be_of_type",
               "kwargs": {
                 "column": "x",
                 "type_": "int",
                 "target_datasource": "python",
               }
             },{
-              "expectation_type": "expect_column_values_to_be_increasing", 
+              "expectation_type": "expect_column_values_to_be_increasing",
               "kwargs": {
                 "column": "x"
               }
@@ -748,7 +790,7 @@ class TestDataset(unittest.TestCase):
 
 
     def test_remove_expectation(self):
-        my_df = ge.dataset.PandasDataSet({
+        my_df = ge.dataset.PandasDataset({
             'x' : [1,2,3,4,5,6,7,8,9,10],
             'y' : [1,2,None,4,None,6,7,8,9,None],
             'z' : ['cello', 'hello', 'jello', 'bellow', 'fellow', 'mellow', 'wellow', 'xello', 'yellow', 'zello'],
@@ -768,7 +810,7 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(
             my_df.remove_expectation("expect_column_to_exist", "x", expectation_kwargs={}, dry_run=True),
             {
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "x"
               }
@@ -778,7 +820,7 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(
             my_df.remove_expectation("expect_column_to_exist", expectation_kwargs={"column": "y"}, dry_run=True),
             {
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "y"
               }
@@ -788,7 +830,7 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(
             my_df.remove_expectation("expect_column_to_exist", expectation_kwargs={"column": "y"}, remove_multiple_matches=True, dry_run=True),
             [{
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "y"
               }
@@ -804,23 +846,23 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(
             my_df.remove_expectation("expect_column_to_exist", remove_multiple_matches=True, dry_run=True),
             [{
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "x"
               }
             },{
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "y"
               }
             },{
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "z"
               }
             }]
         )
-        
+
         with self.assertRaises(Exception) as context:
             my_df.remove_expectation("expect_column_to_exist", "x", {"column": "y"}, dry_run=True)
 
@@ -832,19 +874,19 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(
             my_df.remove_expectation(column="x", remove_multiple_matches=True, dry_run=True),
             [{
-              "expectation_type": "expect_column_to_exist", 
+              "expectation_type": "expect_column_to_exist",
               "kwargs": {
                 "column": "x"
               }
             },{
-              "expectation_type": "expect_column_values_to_be_of_type", 
+              "expectation_type": "expect_column_values_to_be_of_type",
               "kwargs": {
                 "column": "x",
                 "type_": "int",
                 "target_datasource": "python",
               }
             },{
-              "expectation_type": "expect_column_values_to_be_increasing", 
+              "expectation_type": "expect_column_values_to_be_increasing",
               "kwargs": {
                 "column": "x"
               }
@@ -901,7 +943,7 @@ class TestDataset(unittest.TestCase):
         )
 
     def test_discard_failing_expectations(self):
-        df = ge.dataset.PandasDataSet({
+        df = ge.dataset.PandasDataset({
             'A':[1,2,3,4],
             'B':[5,6,7,8],
             'C':['a','b','c','d'],
@@ -934,6 +976,7 @@ class TestDataset(unittest.TestCase):
         ]
 
         sub1 = df[:3]
+
         sub1.discard_failing_expectations()
         self.assertEqual(sub1.find_expectations(), exp1)
 
@@ -1006,11 +1049,11 @@ class TestDataset(unittest.TestCase):
         self.assertEqual(sub1.find_expectations(), exp1)
 
     def test_test_expectation_function(self):
-        D = ge.dataset.PandasDataSet({
+        D = ge.dataset.PandasDataset({
             'x' : [1,3,5,7,9],
             'y' : [1,2,None,7,9],
         })
-        D2 = ge.dataset.PandasDataSet({
+        D2 = ge.dataset.PandasDataset({
             'x' : [1,3,5,6,9],
             'y' : [1,2,None,6,9],
         })
@@ -1018,7 +1061,7 @@ class TestDataset(unittest.TestCase):
             return {
                 "success": bool((self==7).sum().sum() > 0)
             }
-        
+
         self.assertEqual(
             D.test_expectation_function(expect_dataframe_to_contain_7),
             {'success': True}
@@ -1031,61 +1074,62 @@ class TestDataset(unittest.TestCase):
 
     def test_test_column_map_expectation_function(self):
 
-        D = ge.dataset.PandasDataSet({
+        D = ge.dataset.PandasDataset({
             'x' : [1,3,5,7,9],
             'y' : [1,2,None,7,9],
         })
-        def is_odd(self, column, mostly=None, output_format=None, include_config=False, catch_exceptions=None, meta=None):
+        def is_odd(self, column, mostly=None, result_format=None, include_config=False, catch_exceptions=None, meta=None):
             return column % 2 == 1
 
         self.assertEqual(
             D.test_column_map_expectation_function(is_odd, column='x'),
-            {'summary_obj': {'exception_percent': 0.0, 'partial_exception_list': [], 'exception_percent_nonmissing': 0.0, 'exception_count': 0}, 'success': True}
+            {'result': {'element_count': 5, 'missing_count': 0, 'missing_percent': 0, 'unexpected_percent': 0.0, 'partial_unexpected_list': [], 'unexpected_percent_nonmissing': 0.0, 'unexpected_count': 0}, 'success': True}
         )
         self.assertEqual(
-            D.test_column_map_expectation_function(is_odd, 'x', output_format="BOOLEAN_ONLY"),
-            True
+            D.test_column_map_expectation_function(is_odd, 'x', result_format="BOOLEAN_ONLY"),
+            {'success': True}
         )
         self.assertEqual(
-            D.test_column_map_expectation_function(is_odd, column='y', output_format="BOOLEAN_ONLY"),
-            False
+            D.test_column_map_expectation_function(is_odd, column='y', result_format="BOOLEAN_ONLY"),
+            {'success': False}
         )
         self.assertEqual(
-            D.test_column_map_expectation_function(is_odd, column='y', output_format="BOOLEAN_ONLY", mostly=.7),
-            True
-        )        
+            D.test_column_map_expectation_function(is_odd, column='y', result_format="BOOLEAN_ONLY", mostly=.7),
+            {'success': True}
+        )
 
     def test_test_column_aggregate_expectation_function(self):
-        D = ge.dataset.PandasDataSet({
+        D = ge.dataset.PandasDataset({
             'x' : [1,3,5,7,9],
             'y' : [1,2,None,7,9],
         })
-        def expect_second_value_to_be(self, column, value, output_format=None, include_config=False, catch_exceptions=None, meta=None):
+        def expect_second_value_to_be(self, column, value, result_format=None, include_config=False, catch_exceptions=None, meta=None):
             return {
                 "success": column.ix[1] == value,
-                "true_value": column.ix[1],
-                "summary_obj": {}
+                "result": {
+                    "observed_value": column.ix[1],
+                }
             }
 
         self.assertEqual(
             D.test_column_aggregate_expectation_function(expect_second_value_to_be, 'x', 2),
-            {'true_value': 3.0, 'success': False}
+            {'result': {'observed_value': 3.0, 'element_count': 5, 'missing_count': 0, 'missing_percent': 0.0}, 'success': False}
         )
         self.assertEqual(
             D.test_column_aggregate_expectation_function(expect_second_value_to_be, column='x', value=3),
-            {'true_value': 3.0, 'success': True}
+            {'result': {'observed_value': 3.0, 'element_count': 5, 'missing_count': 0, 'missing_percent': 0.0}, 'success': True}
         )
         self.assertEqual(
-            D.test_column_aggregate_expectation_function(expect_second_value_to_be, 'y', value=3, output_format="BOOLEAN_ONLY"),
-            False
+            D.test_column_aggregate_expectation_function(expect_second_value_to_be, 'y', value=3, result_format="BOOLEAN_ONLY"),
+            {'success': False}
         )
         self.assertEqual(
-            D.test_column_aggregate_expectation_function(expect_second_value_to_be, 'y', 2, output_format="BOOLEAN_ONLY"),
-            True
+            D.test_column_aggregate_expectation_function(expect_second_value_to_be, 'y', 2, result_format="BOOLEAN_ONLY"),
+            {'success': True}
         )
 
     def test_meta_version_warning(self):
-        D = ge.dataset.DataSet();
+        D = ge.dataset.Dataset();
 
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
@@ -1100,15 +1144,15 @@ class TestDataset(unittest.TestCase):
                              "WARNING: This configuration object was built using a different version of great_expectations than is currently validating it.")
 
     def test_catch_exceptions_with_bad_expectation_type(self):
-        my_df = ge.dataset.PandasDataSet({"x":range(10)})
-        my_df.append_expectation({'expectation_type':'foobar', 'kwargs':{}})
+        my_df = ge.dataset.PandasDataset({"x":range(10)})
+        my_df._append_expectation({'expectation_type':'foobar', 'kwargs':{}})
         result = my_df.validate(catch_exceptions=True)
 
         self.assertEqual(result["results"][1]["success"], False)
-        self.assertEqual(result["results"][1]["expectation_type"], "foobar")
-        self.assertEqual(result["results"][1]["kwargs"], {})
-        self.assertEqual(result["results"][1]["raised_exception"], True)
-        assert "AttributeError: \'PandasDataSet\' object has no attribute \'foobar\'" in result["results"][1]["exception_traceback"]
+        self.assertEqual(result["results"][1]["expectation_config"]["expectation_type"], "foobar")
+        self.assertEqual(result["results"][1]["expectation_config"]["kwargs"], {})
+        self.assertEqual(result["results"][1]["exception_info"]["raised_exception"], True)
+        assert "AttributeError: \'PandasDataset\' object has no attribute \'foobar\'" in result["results"][1]["exception_info"]["exception_traceback"]
 
         with self.assertRaises(AttributeError) as context:
             result = my_df.validate(catch_exceptions=False)
