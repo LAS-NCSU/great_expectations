@@ -109,7 +109,8 @@ class TestExpectationDecorators(unittest.TestCase):
                             'unexpected_index_list': [],
                             'unexpected_list': [],
                             'unexpected_percent': 0.0,
-                            'unexpected_percent_nonmissing': 0.0},
+                            'unexpected_percent_nonmissing': 0.0,
+                            'affected_rows': []},
              'success': True}
         )
 
@@ -125,7 +126,8 @@ class TestExpectationDecorators(unittest.TestCase):
                             'unexpected_index_list': [],
                             'unexpected_list': [],
                             'unexpected_percent': 0.0,
-                            'unexpected_percent_nonmissing': None},
+                            'unexpected_percent_nonmissing': None,
+                            'affected_rows': []},
              'success': True}
         )
 
@@ -141,7 +143,8 @@ class TestExpectationDecorators(unittest.TestCase):
                             'unexpected_index_list': [],
                             'unexpected_list': [],
                             'unexpected_percent': 0.0,
-                            'unexpected_percent_nonmissing': 0.0},
+                            'unexpected_percent_nonmissing': 0.0,
+                            'affected_rows': []},
              'success': True}
         )
 
@@ -157,7 +160,8 @@ class TestExpectationDecorators(unittest.TestCase):
                             'unexpected_index_list': [5, 6],
                             'unexpected_list': [2., 4.],
                             'unexpected_percent': 0.2,
-                            'unexpected_percent_nonmissing': 2/7},
+                            'unexpected_percent_nonmissing': 2/7,
+                            'affected_rows': [[6, None, 7, 2.0, 2, None], [8, None, 9, 4.0, 4, None]]},
              'success': False}
         )
 
@@ -166,14 +170,15 @@ class TestExpectationDecorators(unittest.TestCase):
             {'result': {'element_count': 10,
                             'missing_count': 0,
                             'missing_percent': 0,
-                            'partial_unexpected_counts': [{'value': 2., 'count': 1}, {'value': 4., 'count': 1}],
+                            'partial_unexpected_counts': [{'value': 2.0, 'count': 1}, {'value': 4.0, 'count': 1}],
                             'partial_unexpected_index_list': [5, 6],
-                            'partial_unexpected_list': [2., 4.],
+                            'partial_unexpected_list': [2.0, 4.0],
                             'unexpected_count': 2,
                             'unexpected_index_list': [5, 6],
-                            'unexpected_list': [2., 4.],
+                            'unexpected_list': [2.0, 4.0],
                             'unexpected_percent': 0.2,
-                            'unexpected_percent_nonmissing': 0.2},
+                            'unexpected_percent_nonmissing': 0.2,
+                            'affected_rows': [[6, None, 7, 2.0, 2, None], [8, None, 9, 4.0, 4, None]]},
              'success': False}
         )
 
@@ -182,15 +187,16 @@ class TestExpectationDecorators(unittest.TestCase):
             {'result': {'element_count': 10,
                             'missing_count': 0,
                             'missing_percent': 0,
-                            'partial_unexpected_counts': [{'value': 2., 'count': 1}, {'value': 4., 'count': 1}],
+                            'partial_unexpected_counts': [{'value': 2.0, 'count': 1}, {'value': 4.0, 'count': 1}],
                             'partial_unexpected_index_list': [5, 6],
-                            'partial_unexpected_list': [2., 4.],
+                            'partial_unexpected_list': [2.0, 4.0],
                             'unexpected_count': 2,
                             'unexpected_index_list': [5, 6],
-                            'unexpected_list': [2., 4.],
+                            'unexpected_list': [2.0, 4.0],
                             'unexpected_percent': 0.2,
-                            'unexpected_percent_nonmissing': 0.2},
-             'success': True}
+                            'unexpected_percent_nonmissing': 0.2,
+                            'affected_rows': [[6, None, 7, 2.0, 2, None], [8, None, 9, 4.0, 4, None]]},
+            'success': True}
         )
 
         self.assertEqual(
@@ -223,7 +229,8 @@ class TestExpectationDecorators(unittest.TestCase):
                                'partial_unexpected_list': [2., 4.],
                                'unexpected_count': 2,
                                'unexpected_percent': 0.2,
-                               'unexpected_percent_nonmissing': 0.2},
+                               'unexpected_percent_nonmissing': 0.2,
+                               'affected_rows': [[6, None, 7, 2.0, 2, None], [8, None, 9, 4.0, 4, None]]},
                 'success': False,
             }
         )
@@ -336,7 +343,8 @@ class TestExpectationDecorators(unittest.TestCase):
                     "unexpected_index_list": [],
                     "partial_unexpected_list": [], 
                     "partial_unexpected_index_list": [], 
-                    "partial_unexpected_counts": [], 
+                    "partial_unexpected_counts": [],
+                    "affected_rows": []
                 }
             }
         )
@@ -360,7 +368,8 @@ class TestExpectationDecorators(unittest.TestCase):
                     "unexpected_index_list": [],
                     "partial_unexpected_list": [], 
                     "partial_unexpected_index_list": [], 
-                    "partial_unexpected_counts": [], 
+                    "partial_unexpected_counts": [],
+                    "affected_rows": []
                 }
             }
         )
@@ -377,14 +386,19 @@ class TestExpectationDecorators(unittest.TestCase):
                     "missing_percent": 0.0, 
                     "unexpected_percent": 0.6,
                     "unexpected_percent_nonmissing": 0.6,
-                    "unexpected_list": [[1,1],[3,3],[5,5]],
+                    "unexpected_list": [[1,1.0],[3,3.0],[5,5.0]],
                     "unexpected_index_list": [0,1,2],
-                    "partial_unexpected_list": [[1,1],[3,3],[5,5]],
+                    "partial_unexpected_list": [[1,1.0],[3,3.0],[5,5.0]],
                     "partial_unexpected_index_list": [0,1,2],
                     "partial_unexpected_counts": [
                         {'count': 1, 'value': [1, 1.0]},
                         {'count': 1, 'value': [3, 3.0]},
                         {'count': 1, 'value': [5, 5.0]}
+                    ],
+                    "affected_rows": [
+                        [2, None, 1, 1.0, 1.0, 1.0],
+                        [4, None, 3, 2.0, 3.0, 3.0],
+                        [6, None, 5, None, None, 5.0]
                     ]
                 }
             }
@@ -405,15 +419,21 @@ class TestExpectationDecorators(unittest.TestCase):
                     "missing_percent": 0.0, 
                     "unexpected_percent": 0.6,
                     "unexpected_percent_nonmissing": 0.6,
-                    "unexpected_list": [[1,1],[3,3],[5,5]],
+                    "unexpected_list": [[1,1.0],[3,3.0],[5,5.0]],
                     "unexpected_index_list": [0,1,2],
-                    "partial_unexpected_list": [[1,1],[3,3],[5,5]],
+                    "partial_unexpected_list": [[1,1.0],[3,3.0],[5,5.0]],
                     "partial_unexpected_index_list": [0,1,2],
                     "partial_unexpected_counts": [
                         {'count': 1, 'value': [1, 1.0]},
                         {'count': 1, 'value': [3, 3.0]},
                         {'count': 1, 'value': [5, 5.0]}
+                    ],
+                    "affected_rows": [
+                        [2, None, 1, 1.0, 1.0, 1.0],
+                        [4, None, 3, 2.0, 3.0, 3.0],
+                        [6, None, 5, None, None, 5.0]
                     ]
+
                 }
             }
         )
@@ -433,15 +453,21 @@ class TestExpectationDecorators(unittest.TestCase):
                     "missing_percent": 0.4,
                     "unexpected_percent": 0.6,
                     "unexpected_percent_nonmissing": 1.0,
-                    "unexpected_list": [[1,1],[3,3],[5,5]],
+                    "unexpected_list": [[1,1.0],[3,3.0],[5,5.0]],
                     "unexpected_index_list": [0,1,2],
-                    "partial_unexpected_list": [[1,1],[3,3],[5,5]],
+                    "partial_unexpected_list": [[1,1.0],[3,3.0],[5,5.0]],
                     "partial_unexpected_index_list": [0,1,2],
                     "partial_unexpected_counts": [
                         {'count': 1, 'value': [1, 1.0]},
                         {'count': 1, 'value': [3, 3.0]},
                         {'count': 1, 'value': [5, 5.0]}
+                    ],
+                    "affected_rows": [
+                        [2, None, 1, 1.0, 1.0, 1.0],
+                        [4, None, 3, 2.0, 3.0, 3.0],
+                        [6, None, 5, None, None, 5.0]
                     ]
+
                 }
             }
         )
@@ -506,7 +532,8 @@ class TestExpectationDecorators(unittest.TestCase):
                     "unexpected_percent_nonmissing": 0.0, 
                     "partial_unexpected_list": [], 
                     "partial_unexpected_index_list": [], 
-                    "partial_unexpected_counts": [], 
+                    "partial_unexpected_counts": [],
+                    "affected_rows": []
                 }
             }
         )
@@ -526,7 +553,8 @@ class TestExpectationDecorators(unittest.TestCase):
                     "missing_percent": 0.0, 
                     "unexpected_percent": 0.0, 
                     "unexpected_percent_nonmissing": 0.0, 
-                    "partial_unexpected_list": [], 
+                    "partial_unexpected_list": [],
+                    "affected_rows": []
                 }
             }
         )

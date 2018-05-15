@@ -73,10 +73,15 @@ class MetaPandasDataset(Dataset):
 
             success, percent_success = self._calc_map_expectation_success(success_count, nonnull_count, mostly)
 
+            rows = sorted(set(unexpected_index_list))
+            df = self.loc[rows]
+            affected_rows = df.to_records(index=False)
+
             return_obj = self._format_column_map_output(
                 result_format, success,
                 element_count, nonnull_count,
-                unexpected_list, unexpected_index_list
+                unexpected_list, unexpected_index_list,
+                affected_rows
             )
 
             return return_obj
@@ -136,10 +141,15 @@ class MetaPandasDataset(Dataset):
 
             success, percent_success = self._calc_map_expectation_success(success_count, nonnull_count, mostly)
 
+            rows = sorted(set(unexpected_index_list))
+            df = self.loc[rows]
+            affected_rows = df.to_records(index=False)
+
             return_obj = self._format_column_map_output(
                 result_format, success,
                 element_count, nonnull_count,
-                unexpected_list, unexpected_index_list
+                unexpected_list, unexpected_index_list,
+                affected_rows
             )
 
             return return_obj
@@ -222,12 +232,10 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
     Notes:
         1. Samples and Subsets of PandaDataSet have ALL the expectations of the original \
            data frame unless the user specifies the ``discard_subset_failing_expectations = True`` \
-           property on the original data frame.
+       property on the original data frame.
         2. Concatenations, joins, and merges of PandaDataSets ONLY contain the \
            default_expectations (see :func:`add_default_expectations`)
     """
-
-    discard_failed_expectations = False
 
     @property
     def _constructor(self):
@@ -248,6 +256,12 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
         super(PandasDataset, self).__finalize__(other, method, **kwargs)
         return self
 
+    def __repr__(self):
+        dea =  self.__dict__.get('default_expectation_args', None)
+        dsfe = self.__dict__.get('discard_subset_failing_expectations', None)
+        s = 'Class Name: %s\ndefault_expectation_args: %s\ndiscard_subset_failing_expectations: %s' % (self.__class__.__name__, dea, dsfe)
+        return s
+
     def __init__(self, *args, **kwargs):
         super(PandasDataset, self).__init__(*args, **kwargs)
         self.discard_subset_failing_expectations = kwargs.get('discard_subset_failing_expectations', False)
@@ -263,7 +277,7 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
     @DocInherit
     @Dataset.expectation(['column'])
     def expect_column_to_exist(
-            self, column, column_index=None, result_format=None, include_config=False,
+            self, column, column_index=None, result_format=None, include_config=False, 
             catch_exceptions=None, meta=None
     ):
 
@@ -385,6 +399,10 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
         # Pass element_count instead of nonnull_count, because that's the right denominator for this expectation
         success, percent_success = self._calc_map_expectation_success(success_count, element_count, mostly)
 
+        rows = sorted(set(unexpected_index_list))
+        df = self.loc[rows]
+        affected_rows = df.to_records(index=False)
+
         return {
             "success": success,
             "result": {
@@ -398,7 +416,8 @@ class PandasDataset(MetaPandasDataset, pd.DataFrame):
                 "partial_unexpected_index_list":
                     unexpected_index_list[:result_format['partial_unexpected_count']],
                 "unexpected_list": unexpected_list,
-                "unexpected_index_list": unexpected_index_list
+                "unexpected_index_list": unexpected_index_list,
+                "affected_rows": affected_rows
             }
         }
 

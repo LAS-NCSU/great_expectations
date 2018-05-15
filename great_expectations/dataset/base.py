@@ -829,7 +829,8 @@ If you wish to change this behavior, please set discard_failed_expectations, dis
     def _format_column_map_output(self,
         result_format, success,
         element_count, nonnull_count,
-        unexpected_list, unexpected_index_list
+        unexpected_list, unexpected_index_list,
+        affected_rows
     ):
         """Helper function to construct expectation result objects for column_map_expectations.
 
@@ -875,7 +876,8 @@ If you wish to change this behavior, please set discard_failed_expectations, dis
             'unexpected_count': unexpected_count,
             'unexpected_percent': unexpected_percent,
             'unexpected_percent_nonmissing': unexpected_percent_nonmissing,
-            'partial_unexpected_list': unexpected_list[:result_format['partial_unexpected_count']]
+            'partial_unexpected_list': unexpected_list[:result_format['partial_unexpected_count']],
+            'affected_rows': affected_rows
         }
 
         if result_format['result_format'] == 'BASIC':
@@ -906,7 +908,8 @@ If you wish to change this behavior, please set discard_failed_expectations, dis
         return_obj['result'].update(
             {
                 'unexpected_list': unexpected_list,
-                'unexpected_index_list': unexpected_index_list
+                'unexpected_index_list': unexpected_index_list,
+                'affected_rows': affected_rows
             }
         )
 
@@ -1586,9 +1589,9 @@ If you wish to change this behavior, please set discard_failed_expectations, dis
 
         Keyword Args:
             allow_cross_type_comparisons (boolean or None) : If True, allow comparisons between types (e.g. integer and\
-                string). Otherwise, attempting such comparisons will raise an exception.
+            string). Otherwise, attempting such comparisons will raise an exception.
             parse_strings_as_datetimes (boolean or None) : If True, parse min_value, max_value, and all non-null column\
-                values to datetimes before making comparisons.
+            values to datetimes before making comparisons.
             mostly (None or a float between 0 and 1): \
                 Return `"success": True` if at least mostly percent of values match the expectation. \
                 For more detail, see :ref:`mostly`.

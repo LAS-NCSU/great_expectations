@@ -92,7 +92,8 @@
         "partial_unexpected_list": [],
         "unexpected_percent_nonmissing": 0.0,
         "missing_count": 557,
-        "unexpected_index_list": []
+        "unexpected_index_list": [],
+        "affected_rows": []
       }
     },
     {
@@ -145,6 +146,35 @@
           394,
           456,
           1195
+        ],
+        "affected_rows": [
+                    [
+                        395, 
+                        "Downton (?Douton), Mr William James", 
+                        "2nd", 
+                        null, 
+                        "male", 
+                        0, 
+                        0
+                    ], 
+                    [
+                        457, 
+                        "Jacobsohn Mr Samuel", 
+                        "*", 
+                        null, 
+                        "male", 
+                        0, 
+                        0
+                    ], 
+                    [
+                        1196, 
+                        "Seman Master Betros", 
+                        "3rd", 
+                        null, 
+                        "male", 
+                        0, 
+                        0
+                    ]
         ]
       }
     },
@@ -185,6 +215,17 @@
         "missing_count": 0,
         "unexpected_index_list": [
           456
+        ],
+        "affected_rows": [
+                    [
+                        457, 
+                        "Jacobsohn Mr Samuel", 
+                        "*", 
+                        null, 
+                        "male", 
+                        0, 
+                        0
+                    ]
         ]
       }
     }

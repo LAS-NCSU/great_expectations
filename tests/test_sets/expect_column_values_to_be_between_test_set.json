@@ -23,6 +23,7 @@
       "out": {
         "unexpected_list": [],
         "unexpected_index_list": [],
+        "affected_rows": []
         "success": true
       },
       "in": {
@@ -35,6 +36,7 @@
       "out": {
         "unexpected_list": [],
         "unexpected_index_list": [],
+        "affected_rows": []
         "success": true
       },
       "in": {
@@ -49,6 +51,7 @@
           10
         ],
         "unexpected_index_list": [9],
+        "affected_rows": [[10, "abc", null]]
         "success": false
       },
       "in": {
@@ -64,6 +67,10 @@
           2
         ],
         "unexpected_index_list": [0, 1],
+        "affected_rows": [
+            [1,2,3],
+            [4,5,6]
+        ]
         "success": false
       },
       "in": {

@@ -28,7 +28,10 @@
         "out": {
           "success": false,
           "unexpected_index_list": [0],
-          "unexpected_list": [1]
+          "unexpected_list": [1],
+          "affected_rows": [
+              [1, 1.1, "hello"]
+          ]
         }
       },
       {
@@ -41,7 +44,12 @@
         "out": {
           "success": false,
           "unexpected_index_list": [0, 1, 2],
-          "unexpected_list": [1, 2, 4]
+          "unexpected_list": [1, 2, 4],
+          "affected_rows": [
+              [1, 1.1, "hello"],
+              [2, 2.2, "jello"],
+              [4, 5.5, "mello"]
+          ]
         }
       },
       {
@@ -65,7 +73,10 @@
         "out": {
           "success": false,
           "unexpected_index_list": [2],
-          "unexpected_list": ["mello"]
+          "unexpected_list": ["mello"],
+          "affected_rows": [
+              [4, 5.5, "mello"]
+          ]
         }
       },
       {
@@ -78,7 +89,12 @@
         "out": {
           "success": false,
           "unexpected_index_list": [0, 1, 2],
-          "unexpected_list": [1, 2, 4]
+          "unexpected_list": [1, 2, 4],
+          "affected_rows": [
+              [1, 1.1, "hello"],
+              [2, 2.2, "jello"],
+              [4, 5.5, "mello"]
+          ]
         }
       },
       {
@@ -102,7 +118,12 @@
         "out": {
           "success": false,
           "unexpected_index_list": [0, 1, 2],
-          "unexpected_list": [1.1, 2.2, 5.5]
+          "unexpected_list": [1.1, 2.2, 5.5],
+          "affected_rows": [
+              [1, 1.1, "hello"],
+              [2, 2.2, "jello"],
+              [4, 5.5, "mello"]
+          ]
         }
       },
       {

@@ -213,5 +213,8 @@ def evaluate_json_test(dataset, expectation_type, test):
                 assert result['exception_info']['raised_exception']
                 assert value in result['exception_info']['exception_traceback'], "expected to find " + value + " in " + result['exception_info']['exception_traceback']
 
+            elif key == 'affected_rows':
+                assert result['result']['affected_rows'] ==value
+
             else:
                 raise ValueError("Invalid test specification: unknown key " + key + " in 'out'")

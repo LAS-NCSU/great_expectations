@@ -181,9 +181,10 @@ class TestValidation(unittest.TestCase):
         )
         my_df.set_default_expectation_argument("result_format", "COMPLETE")
 
+        my_df.discard_subset_failing_expectations = False
+
         results = my_df.validate(catch_exceptions=False)
         # print json.dumps(results, indent=2)
-
         with open('./tests/test_sets/expected_results_20180303.json') as f:
             expected_results = json.load(f)
             #print json.dumps(expected_results, indent=2)
@@ -220,7 +221,22 @@ class TestValidation(unittest.TestCase):
                                 "missing_percent": 0.0, "partial_unexpected_counts": [{"count": 1, "value": "*"}],
                                 "partial_unexpected_list": ["*"],
                                 "unexpected_percent_nonmissing": 0.0007616146230007616, "missing_count": 0,
-                                "unexpected_index_list": [456]}}]}
+                                "unexpected_index_list": [456],
+                                "affected_rows": [
+                                    [
+                                        457,
+                                        "Jacobsohn Mr Samuel",
+                                        "*",
+                                        None,
+                                        "male",
+                                        0,
+                                        0
+                                    ]
+                                ]
+                            }
+                }
+            ]
+            }
 
         )
 
@@ -279,6 +295,9 @@ class TestValidation(unittest.TestCase):
         my_df = pd.DataFrame({
             "x" : [1,2,3,4,5]
         })
+
+        my_df.discard_subset_failing_expectations = False
+
         validation_result = ge.validate(my_df, {
             "dataset_name" : None,
             "meta": {
@@ -336,7 +355,8 @@ class TestValidation(unittest.TestCase):
                                       2
                                  ],
                                  "unexpected_percent_nonmissing": 0.4,
-                                 "unexpected_count": 2
+                                 "unexpected_count": 2,
+                                 "affected_rows": [[1], [2]]
                     }
                 }
               ]

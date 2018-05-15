@@ -367,13 +367,15 @@ class TestDataset(unittest.TestCase):
         success_count = 15
         unexpected_list = []
         unexpected_index_list = []
+        affected_rows = []
 
         self.assertEqual(
             df._format_column_map_output(
                 "BOOLEAN_ONLY",
                 success,
                 element_count, nonnull_count,
-                unexpected_list, unexpected_index_list
+                unexpected_list, unexpected_index_list,
+                affected_rows
             ),
             {'success': True}
         )
@@ -383,7 +385,8 @@ class TestDataset(unittest.TestCase):
                 "BASIC",
                 success,
                 element_count, nonnull_count,
-                unexpected_list, unexpected_index_list
+                unexpected_list, unexpected_index_list,
+                affected_rows
             ),
             {
                 'success': True,
@@ -394,7 +397,8 @@ class TestDataset(unittest.TestCase):
                     'partial_unexpected_list': [],
                     'unexpected_count': 0,
                     'unexpected_percent': 0.0,
-                    'unexpected_percent_nonmissing': 0.0
+                    'unexpected_percent_nonmissing': 0.0,
+                    'affected_rows': []
                 }
             }
         )
@@ -405,7 +409,8 @@ class TestDataset(unittest.TestCase):
                 success,
                 element_count,
                 nonnull_count,
-                unexpected_list, unexpected_index_list
+                unexpected_list, unexpected_index_list,
+                affected_rows
             ),
             {
                 'success': True,
@@ -418,7 +423,8 @@ class TestDataset(unittest.TestCase):
                     'unexpected_percent': 0.0,
                     'unexpected_percent_nonmissing': 0.0,
                     'partial_unexpected_index_list': [],
-                    'partial_unexpected_counts': []
+                    'partial_unexpected_counts': [],
+                    'affected_rows': []
                 }
             }
         )
@@ -429,7 +435,8 @@ class TestDataset(unittest.TestCase):
                 success,
                 element_count,
                 nonnull_count,
-                unexpected_list, unexpected_index_list
+                unexpected_list, unexpected_index_list,
+                affected_rows
             ),
             {
                 'success': True,
@@ -445,7 +452,8 @@ class TestDataset(unittest.TestCase):
                         'partial_unexpected_index_list': [],
                         'partial_unexpected_counts': [],
                         'unexpected_list': [],
-                        'unexpected_index_list': []
+                        'unexpected_index_list': [],
+                        'affected_rows': []
                     }
             }
         )
@@ -467,7 +475,8 @@ class TestDataset(unittest.TestCase):
                 success,
                 element_count,
                 nonnull_count,
-                unexpected_list, unexpected_index_list
+                unexpected_list, unexpected_index_list,
+                affected_rows
             ),
             {'success': True}
         )
@@ -478,7 +487,8 @@ class TestDataset(unittest.TestCase):
                 success,
                 element_count,
                 nonnull_count,
-                unexpected_list, unexpected_index_list
+                unexpected_list, unexpected_index_list,
+                affected_rows
             ),
             {
                 'success': True,
@@ -489,7 +499,8 @@ class TestDataset(unittest.TestCase):
                     'partial_unexpected_list': [],
                     'unexpected_count': 0,
                     'unexpected_percent': 0.0,
-                    'unexpected_percent_nonmissing': None
+                    'unexpected_percent_nonmissing': None,
+                    'affected_rows': []
                 }
             }
         )
@@ -500,7 +511,8 @@ class TestDataset(unittest.TestCase):
                 success,
                 element_count,
                 nonnull_count,
-                unexpected_list, unexpected_index_list
+                unexpected_list, unexpected_index_list,
+                affected_rows
             ),
             {
                 'success': True,
@@ -513,7 +525,8 @@ class TestDataset(unittest.TestCase):
                     'unexpected_percent': 0.0,
                     'unexpected_percent_nonmissing': None,
                     'partial_unexpected_index_list': [],
-                    'partial_unexpected_counts': []
+                    'partial_unexpected_counts': [],
+                    'affected_rows': []
                 }
             }
         )
@@ -524,7 +537,8 @@ class TestDataset(unittest.TestCase):
                 success,
                 element_count,
                 nonnull_count,
-                unexpected_list, unexpected_index_list
+                unexpected_list, unexpected_index_list,
+                affected_rows
             ),
             {
                 'success': True,
@@ -539,7 +553,8 @@ class TestDataset(unittest.TestCase):
                     'partial_unexpected_index_list': [],
                     'partial_unexpected_counts': [],
                     'unexpected_list': [],
-                    'unexpected_index_list': []
+                    'unexpected_index_list': [],
+                    'affected_rows': []
                 }
             }
         )
@@ -561,7 +576,8 @@ class TestDataset(unittest.TestCase):
                 success,
                 element_count,
                 nonnull_count,
-                unexpected_list, unexpected_index_list
+                unexpected_list, unexpected_index_list,
+                affected_rows
             ),
             {'success': False}
         )
@@ -572,7 +588,8 @@ class TestDataset(unittest.TestCase):
                 success,
                 element_count,
                 nonnull_count,
-                unexpected_list, unexpected_index_list
+                unexpected_list, unexpected_index_list,
+                affected_rows
             ),
             {
                 'success': False,
@@ -583,7 +600,8 @@ class TestDataset(unittest.TestCase):
                     'partial_unexpected_list': [],
                     'unexpected_count': 0,
                     'unexpected_percent': None,
-                    'unexpected_percent_nonmissing': None
+                    'unexpected_percent_nonmissing': None,
+                    'affected_rows': []
                 }
             }
         )
@@ -594,7 +612,8 @@ class TestDataset(unittest.TestCase):
                 success,
                 element_count,
                 nonnull_count,
-                unexpected_list, unexpected_index_list
+                unexpected_list, unexpected_index_list,
+                affected_rows
             ),
             {
                 'success': False,
@@ -607,7 +626,8 @@ class TestDataset(unittest.TestCase):
                     'unexpected_percent': None,
                     'unexpected_percent_nonmissing': None,
                     'partial_unexpected_counts': [],
-                    'partial_unexpected_index_list': []
+                    'partial_unexpected_index_list': [],
+                    'affected_rows': []
                 }
             }
         )
@@ -618,7 +638,8 @@ class TestDataset(unittest.TestCase):
                 success,
                 element_count,
                 nonnull_count,
-                unexpected_list, unexpected_index_list
+                unexpected_list, unexpected_index_list,
+                affected_rows
             ),
             {
                 'success': False,
@@ -633,7 +654,8 @@ class TestDataset(unittest.TestCase):
                     'partial_unexpected_counts': [],
                     'partial_unexpected_index_list': [],
                     'unexpected_list': [],
-                    'unexpected_index_list': []
+                    'unexpected_index_list': [],
+                    'affected_rows': []
                 }
             }
         )
@@ -1083,7 +1105,7 @@ class TestDataset(unittest.TestCase):
 
         self.assertEqual(
             D.test_column_map_expectation_function(is_odd, column='x'),
-            {'result': {'element_count': 5, 'missing_count': 0, 'missing_percent': 0, 'unexpected_percent': 0.0, 'partial_unexpected_list': [], 'unexpected_percent_nonmissing': 0.0, 'unexpected_count': 0}, 'success': True}
+            {'result': {'element_count': 5, 'missing_count': 0, 'missing_percent': 0, 'unexpected_percent': 0.0, 'partial_unexpected_list': [], 'unexpected_percent_nonmissing': 0.0, 'unexpected_count': 0, 'affected_rows': []}, 'success': True}
         )
         self.assertEqual(
             D.test_column_map_expectation_function(is_odd, 'x', result_format="BOOLEAN_ONLY"),

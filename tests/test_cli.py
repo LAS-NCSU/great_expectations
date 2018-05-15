@@ -64,6 +64,14 @@ class TestCLI(unittest.TestCase):
         with open(filepath + '/test_sets/expected_cli_results_default.json', 'r') as f:
             expected_cli_results = json.load(f)
 
+        print("AAA")
+        print(json.dumps(json_result, indent=2, sort_keys=True))
+        print("BBB")
+        print(json.dumps(expected_cli_results, indent=2, sort_keys=True))
+        print("CCC")
+
+
+
         assertDeepAlmostEqual(self,
             json_result,
             expected_cli_results
